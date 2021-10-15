@@ -1,7 +1,6 @@
-const express = require("express");
 const { Connection, Request } = require("tedious");
-const app = express();
-const port = 3000;
+
+// Create connection to database
 const config = {
   authentication: {
     options: {
@@ -16,7 +15,19 @@ const config = {
     encrypt: true,
   },
 };
+
 const connection = new Connection(config);
+
+// Attempt to connect and execute queries if connection goes through
+connection.on("connect", (err) => {
+  if (err) {
+    console.error(err.message);
+  } else {
+    queryDatabase();
+  }
+});
+
+connection.connect();
 
 function queryDatabase() {
   console.log("Reading rows from the Table...");
@@ -41,29 +52,3 @@ function queryDatabase() {
 
   connection.execSql(request);
 }
-
-// Attempt to connect and execute queries if connection goes through
-connection.on("connect", (err) => {
-  if (err) {
-    console.error(err.message);
-  } else {
-    queryDatabase();
-  }
-});
-
-connection.connect();
-
-app.get("/", (req, res) => {
-  //res.send('Hello World!')
-  res.json({ hello: ["world", "test "], bye: "mom", hi: "dad" });
-});
-
-app.get("/sql", (req, res) => {
-  res.send(queryDatabase());
-});
-
-// TODO: Add endpoint for inserting data using POST request
-
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
-});

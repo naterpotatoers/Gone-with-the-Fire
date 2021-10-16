@@ -1,36 +1,62 @@
 //***THIS IS FOR THE WEATHER STATION SENDER***
-
-#include "DHTesp.h"
 #include "heltec.h"
 #include "LoRa.h"
-
 #include <TinyGPS++.h>
-#include <SoftwareSerial.h>
+#include "SoftwareSerial.h"
+#include "DHT.h"
 
 
-DHTesp dht;
+#define DHT11PIN 33
+DHT dht(DHT11PIN, DHT11);
 float currentTemp;
 float currentHumidity;
+
+double Lon, Lat;
 TinyGPSPlus gps;
-
-static const int RXPin = 4, TXPin = 3;
+static const int RXPin = 17, TXPin = 2;
 static const uint32_t GPSBaud = 9600;
-SoftwareSerial ss(RXPin, TXPin);
+SoftwareSerial gpsSerial(RXPin, TXPin);
 
 
-void GPSCheck(){
-    while (ss.available() > 0){
-    gps.encode(ss.read());
+
+
+
+void getGPS(){
+    while (gpsSerial.available()){
+    gps.encode(gpsSerial.read());
     if (gps.location.isUpdated()){
-      Serial.print("Latitude= "); 
-      Serial.print(gps.location.lat(), 6);
-      Serial.print(" Longitude= "); 
-      Serial.println(gps.location.lng(), 6);
+
+      Lat = gps.location.lat();
+      Lon = gps.location.lng();
+
+      Serial.print("Latitude: " + (String)Lat + "\nLongitude: " + (String)Lon);
+      LoRa.print("Latitude: " + (String)Lat + "\nLongitude: " + (String)Lon);
     }
   }
 }
 
- 
+
+void getDHT(){
+
+  Serial.println("Temperature: " + (String)currentTemp +  "°C");
+  Serial.println("Temperature: " + (String)(1.8*currentTemp+32) + "°F");
+  Serial.println("Humidity: " + (String)currentHumidity + "%\n");
+  Serial.println("Latitude: " + (String)Lat + "\nLongitude: " + (String)Lon);
+
+  LoRa.print("Temperature: " + (String)currentTemp +  "°C");
+  LoRa.print("Temperature: " + (String)(1.8*currentTemp+32) + "°F");
+  LoRa.print("Humidity: " + (String)currentHumidity + "%");
+}
+
+
+void SendLoRaPacket(){
+  LoRa.beginPacket();
+  getGPS();
+  getDHT();
+  LoRa.endPacket();
+}
+
+/*
 void displayOnBoard() {
    
   String CtemperatureDisplay ="Temperature: " + (String)currentTemp +  "°C";
@@ -46,41 +72,30 @@ void displayOnBoard() {
   // Display the readings
   Heltec.display->display();
 }
-
-void SendLoRaPacket(){
-  LoRa.beginPacket();
-  LoRa.print("Temperature: " + (String)currentTemp +  "°C");
-  LoRa.print("Temperature: " + (String)(1.8*currentTemp+32) + "°F");
-  LoRa.print("Humidity: " + (String)currentHumidity + "%");
-  LoRa.endPacket();
-}
+*/
 
 
 void setup()
 {
-
   Serial.begin(9600);
+  gpsSerial.begin(GPSBaud);
+  dht.begin();
+
+
+  
   Serial.println("LoRa Sender starting...");
 
-    if (!LoRa.begin(915E6, 1)) { // Set frequency to 433, 868 or 915MHz
+  if (!LoRa.begin(915E6, 1)) { // Set frequency to 433, 868 or 915MHz
     Serial.println("Could not find a valid LoRa transceiver, check pins used and wiring!");
-    delay(1000);
   }
- 
-  dht.setup(33, DHTesp::DHT11);
-  Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, false /*Serial Enable*/);
 }
  
     
 void loop()
 {
-  currentTemp = dht.getTemperature();
-  currentHumidity = dht.getHumidity();
-  displayOnBoard();
+  currentHumidity = dht.readHumidity();
+  currentTemp = dht.readTemperature();
+
   SendLoRaPacket();
-  Serial.println("Temp: " + (String)currentTemp + "     Humidity: " + (String)currentHumidity);
-  GPSCheck();
-  delay(10000);
+  
 }
-
-

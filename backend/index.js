@@ -1,9 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const { Connection, Request } = require("tedious");
+const { json } = require("express");
 const app = express();
 app.use(cors());
-const port = 3000;
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: false }));
+const port = 5000;
 const config = {
   authentication: {
     options: {
@@ -44,24 +47,19 @@ function queryDatabase() {
   connection.execSql(request);
 }
 
-// Attempt to connect and execute queries if connection goes through
-connection.on("connect", (err) => {
-  if (err) {
-    console.error(err.message);
-  } else {
-    queryDatabase();
-  }
-});
-
 connection.connect();
 
 app.get("/", (req, res) => {
-  //res.send('Hello World!')
-  res.json({ hello: ["world", "test "], bye: "mom", hi: "dad" });
+  res.send("Hello World!");
 });
 
 app.get("/sql", (req, res) => {
   res.send(queryDatabase());
+});
+
+app.post("/", (req, res) => {
+  console.log(req.body);
+  res.jsonp(res.body);
 });
 
 // TODO: Add endpoint for inserting data using POST request

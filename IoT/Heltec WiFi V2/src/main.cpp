@@ -1,24 +1,39 @@
-//***THIS IS FOR THE WEATHER STATION RECIEVER***
+#include "heltec.h"
 #include "LoRa.h"
 #include "HTTPClient.h"
 #include "WiFiMulti.h"
 #include "ArduinoJson.h"
 
- 
+String Packet;
+
+
 const char *AP_SSID = "kingdom2";
 const char *AP_PWD = "22039622";
   
 WiFiMulti wifiMulti;
 
-void LoRaRecieve(){
+
+void displayOnBoard(String LoraInfo) {
+  
+  Heltec.display->clear();
+  // Prepare to display temperature C and F
+  Heltec.display->drawString(0, 0, LoraInfo);
+  // Display the readings
+  Heltec.display->display();
+}
+
+void LoraRecieve(){
     // try to parse packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
-    Serial.print("LoRa Packet Recieved");
+    Serial.println("Packet Received: ");
+
     // read packet
     while (LoRa.available()) {
-      Serial.print((String)LoRa.read());
+      Packet = LoRa.readString();
+      Serial.println(Packet);
+      displayOnBoard(Packet);
     }
   }
 }
@@ -37,13 +52,17 @@ void postDataToServer() {
     StaticJsonDocument<200> doc;
     // Add values in the document
     //
-    doc["sensor"] = "gps";
+    doc["Temp"] = "CurrentTemp";
+    doc["Humidity"] = "CurrentHumid";
+    doc["GPS"] = "CurrentGPS";
+    doc["Smoke"] = "Yes/No";
+
     //doc["time"] = 1351824120;
    
     // Add an array.
     //
-    JsonArray data = doc.createNestedArray("FireData");
-    data.add("Info");
+    //JsonArray data = doc.createNestedArray("FireData");
+    //data.add("Info");
      
     String requestBody;
     serializeJson(doc, requestBody);
@@ -66,27 +85,21 @@ void postDataToServer() {
      
   }
 }
- 
+
+
 void setup() {
   Serial.begin(9600);
+  while (!Serial);
 
-/*
+  Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, false /*Serial Enable*/);
   Serial.println("LoRa Receiver");
-  if (!LoRa.begin(915E6)) {
+
+  if (!LoRa.begin(915E6, 1)) {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
-  */
+}
 
-  delay(4000);
-  wifiMulti.addAP(AP_SSID, AP_PWD);
-  
-}
- 
 void loop() {
-  Serial.println("Sending information to server...");
-  //LoRaRecieve();
-  postDataToServer();
-  delay(10000);
+  LoraRecieve();
 }
- 

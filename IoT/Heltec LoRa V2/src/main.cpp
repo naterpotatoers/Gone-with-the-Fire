@@ -3,6 +3,7 @@
 #include "LoRa.h"
 #include <TinyGPS++.h>
 #include "SoftwareSerial.h"
+#include "Adafruit_Sensor.h"
 #include "DHT.h"
 
 
@@ -43,9 +44,10 @@ void getDHT(){
   Serial.println("Humidity: " + (String)currentHumidity + "%\n");
   Serial.println("Latitude: " + (String)Lat + "\nLongitude: " + (String)Lon);
 
-  LoRa.print("Temperature: " + (String)currentTemp +  "°C");
-  LoRa.print("Temperature: " + (String)(1.8*currentTemp+32) + "°F");
-  LoRa.print("Humidity: " + (String)currentHumidity + "%");
+  LoRa.println("Temperature: " + (String)currentTemp +  "°C");
+  LoRa.println("Temperature: " + (String)(1.8*currentTemp+32) + "°F");
+  LoRa.println("Humidity: " + (String)currentHumidity + "%");
+  LoRa.println("Latitude: " + (String)Lat + "\nLongitude: " + (String)Lon);
 }
 
 

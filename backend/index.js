@@ -1,6 +1,8 @@
 const express = require("express");
+const cors = require("cors");
 const { Connection, Request } = require("tedious");
 const app = express();
+app.use(cors());
 const port = 3000;
 const config = {
   authentication: {

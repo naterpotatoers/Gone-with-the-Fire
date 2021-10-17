@@ -32,7 +32,7 @@ function createGraph(data: any, label: string, dates: any) {
 }
 
 export async function getStaticProps() {
-  const res = await fetch("http://localhost:5000/iot");
+  const res = await fetch("http://20.69.111.104:5000/iot");
   const posts = await res.json();
   // console.log(posts);
   return {

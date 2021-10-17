@@ -1,9 +1,15 @@
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Iot {
-  @PrimaryColumn()
-  id: string;
+  @PrimaryGeneratedColumn('increment')
+  id: number;
+
+  @Column({ default: () => 'NOW()' })
+  date: Date;
+
+  @Column()
+  name: string;
 
   @Column({ default: 0 })
   temperature: number;

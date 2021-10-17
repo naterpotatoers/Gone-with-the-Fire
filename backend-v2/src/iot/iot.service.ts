@@ -14,7 +14,7 @@ export class IotService {
 
   create(dto: CreateIotDto): Promise<Iot> {
     const iot = new Iot();
-    iot.id = dto.id;
+    iot.name = dto.name;
     iot.temperature = dto.temperature;
     iot.humidity = dto.humidity;
     iot.longitude = dto.longitude;

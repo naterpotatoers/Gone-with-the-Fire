@@ -1,5 +1,5 @@
 export class CreateIotDto {
-  id: string;
+  name: string;
   temperature: number;
   humidity: number;
   longitude: number;

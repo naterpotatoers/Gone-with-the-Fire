@@ -3,12 +3,15 @@
 #include "HTTPClient.h"
 #include "WiFiMulti.h"
 #include "ArduinoJson.h"
+#include "Adafruit_Sensor.h"
 
 String Packet;
 
 
 const char *AP_SSID = "kingdom2";
 const char *AP_PWD = "22039622";
+
+String id, Temp, Humid, Lat, Lon, Smoke;
   
 WiFiMulti wifiMulti;
 
@@ -29,12 +32,24 @@ void LoraRecieve(){
     // received a packet
     Serial.println("Packet Received: ");
 
+    if(LoRa.available()){
+    id = "heltecNachooo";
+    Temp = LoRa.readString();
+    Humid = LoRa.readString();
+    Lat = LoRa.readString();
+    Lon = LoRa.readString();
+    Smoke  = LoRa.readString();
+    delay(3000);
+  }
+
+/*
     // read packet
     while (LoRa.available()) {
       Packet = LoRa.readString();
       Serial.println(Packet);
       displayOnBoard(Packet);
     }
+    */
   }
 }
 
@@ -46,16 +61,22 @@ void postDataToServer() {
      
     HTTPClient http;
      
-    http.begin("http://20.38.169.98:5000/");
+    http.begin("http://20.69.111.104:5000/iot");
     http.addHeader("Content-Type", "application/json");
      
     StaticJsonDocument<200> doc;
     // Add values in the document
     //
-    doc["Temp"] = "CurrentTemp";
-    doc["Humidity"] = "CurrentHumid";
-    doc["GPS"] = "CurrentGPS";
-    doc["Smoke"] = "Yes/No";
+
+
+    doc["id"] = id;
+    doc["temperature"] = Temp;
+    doc["humidity"] = Humid;
+    doc["longitude"] = Lat;
+    doc["latitude"] = Lon;
+    doc["smoke"] = Smoke;
+    delay(5000);
+
 
     //doc["time"] = 1351824120;
    
@@ -98,8 +119,12 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+
+  wifiMulti.addAP(AP_SSID, AP_PWD);
+
 }
 
 void loop() {
   LoraRecieve();
+  postDataToServer();
 }

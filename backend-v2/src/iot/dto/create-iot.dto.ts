@@ -4,5 +4,5 @@ export class CreateIotDto {
   humidity: number;
   longitude: number;
   latitude: number;
-  smoke: number;
+  smoke: boolean;
 }

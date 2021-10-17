@@ -17,6 +17,6 @@ export class Iot {
   @Column({ default: 0 })
   latitude: number;
 
-  @Column({ default: 0 })
-  smoke: number;
+  @Column({ default: false })
+  smoke: boolean;
 }

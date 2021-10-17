@@ -6,5 +6,5 @@ export class UpdateIotDto extends PartialType(CreateIotDto) {
   humidity: number;
   longitude: number;
   latitude: number;
-  smoke: number;
+  smoke: boolean;
 }

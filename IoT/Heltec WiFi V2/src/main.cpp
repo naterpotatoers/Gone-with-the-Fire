@@ -5,52 +5,41 @@
 #include "ArduinoJson.h"
 #include "Adafruit_Sensor.h"
 
-String Packet;
+#include <string_view>
+
 
 
 const char *AP_SSID = "kingdom2";
 const char *AP_PWD = "22039622";
 
+String Packet;
 String id, Temp, Humid, Lat, Lon, Smoke;
+
+String pack[5];
   
 WiFiMulti wifiMulti;
-
-
-void displayOnBoard(String LoraInfo) {
-  
-  Heltec.display->clear();
-  // Prepare to display temperature C and F
-  Heltec.display->drawString(0, 0, LoraInfo);
-  // Display the readings
-  Heltec.display->display();
-}
 
 void LoraRecieve(){
     // try to parse packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
+  }
     // received a packet
-    Serial.println("Packet Received: ");
+    
 
     if(LoRa.available()){
-    id = "heltecNachooo";
-    Temp = LoRa.readString();
-    Humid = LoRa.readString();
-    Lat = LoRa.readString();
-    Lon = LoRa.readString();
-    Smoke  = LoRa.readString();
-    delay(3000);
+      Serial.println("Packet Received: ");
+    Packet = LoRa.readString();
+  }
+  Serial.println(Packet);
+
+  for(int i=0; i<5; i++){
+      substr(Packet.find("\n"));
+      Packet = substr(Packet.find("\n"));
+      pack[i] = Packet;
   }
 
-/*
-    // read packet
-    while (LoRa.available()) {
-      Packet = LoRa.readString();
-      Serial.println(Packet);
-      displayOnBoard(Packet);
-    }
-    */
-  }
+  delay(10000);
 }
 
 void postDataToServer() {
@@ -66,17 +55,15 @@ void postDataToServer() {
      
     StaticJsonDocument<200> doc;
     // Add values in the document
-    //
 
+//char json[] = "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
 
-    doc["id"] = id;
-    doc["temperature"] = Temp;
-    doc["humidity"] = Humid;
-    doc["longitude"] = Lat;
-    doc["latitude"] = Lon;
-    doc["smoke"] = Smoke;
-    delay(5000);
-
+    doc["name"] = "ESP32";
+    doc["temperature"] = pack[0];
+    doc["humidity"] = pack[1];
+    doc["longitude"] = pack[2];
+    doc["latitude"] = pack[3];
+    doc["smoke"] = pack[4];
 
     //doc["time"] = 1351824120;
    
@@ -94,7 +81,7 @@ void postDataToServer() {
        
       String response = http.getString();                       
        
-      Serial.println(httpResponseCode);   
+      Serial.println(httpResponseCode);
       Serial.println(response);
      
     }
@@ -106,7 +93,6 @@ void postDataToServer() {
      
   }
 }
-
 
 void setup() {
   Serial.begin(9600);

@@ -10,7 +10,9 @@ import {
 import { IotService } from './iot.service';
 import { CreateIotDto } from './dto/create-iot.dto';
 import { UpdateIotDto } from './dto/update-iot.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('iot')
 @Controller('iot')
 export class IotController {
   constructor(private readonly iotService: IotService) {}
